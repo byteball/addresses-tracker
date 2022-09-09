@@ -8,18 +8,19 @@ const conf = require('./conf.js');
 const { getImportToObyteBridgesAddresses } = require('./helpers/getImportToObyteBridgesAddresses.js');
 const { cleanMyWatchedAddresses } = require('./helpers/cleanMyWatchedAddresses.js');
 const { newMyTransactions } = require('./gateways/newMyTransactions.js');
+const { launchServer } = require('./server.js');
 
 lightWallet.setLightVendorHost(conf.hub);
 
 eventBus.once('connected', (ws) => {
-  network.initWitnessesIfNecessary(ws, start);
+  network.initWitnessesIfNecessary(ws, startWatching);
 });
 
 async function addWatchedAas(subscriptions) {
   subscriptions.map((address) => wallet_general.addWatchedAddress(address, null, console.log));
 }
 
-async function start() {
+async function startWatching() {
   await cleanMyWatchedAddresses();
   
   const importBridgesAddresses = await getImportToObyteBridgesAddresses();
@@ -33,5 +34,7 @@ async function start() {
 
   lightWallet.refreshLightClientHistory();
 }
+
+launchServer();
 
 eventBus.on('new_my_transactions', newMyTransactions);

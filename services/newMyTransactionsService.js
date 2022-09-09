@@ -27,18 +27,18 @@ const insertSuitableAddressesToTracked = async (addresses) => {
     }
 
     const isAddressAA = await checkIsAddressAA(address);
-    console.log('!!!isAddressAA isAddressAA', isAddressAA);
+
     if(isAddressAA) {
       continue;
     }
 
     const trackedAddressRow = await db.query('SELECT address FROM tracked_addresses WHERE address = ?', [address]);
-    console.log('!!!trackedAddressRow trackedAddressRow', trackedAddressRow);
+
     if(trackedAddressRow.length) {
       continue;
     }
 
-    await db.query('INSERT INTO (tracked_addresses) VALUES (?)', [address]);
+    await db.query('INSERT INTO (tracked_addresses, creation_date) VALUES (?, ?)', [address, Date.now()]);
   }
 }
 
