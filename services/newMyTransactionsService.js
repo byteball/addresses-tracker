@@ -38,7 +38,7 @@ const insertSuitableAddressesToTracked = async (addresses) => {
       continue;
     }
 
-    await db.query('INSERT INTO (tracked_addresses, creation_date) VALUES (?, ?)', [address, Date.now()]);
+    await db.query('INSERT INTO tracked_addresses(address, creation_date) VALUES (?, ?)', [address, Date.now()]);
   }
 }
 
