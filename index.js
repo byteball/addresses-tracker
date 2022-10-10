@@ -22,9 +22,9 @@ async function addWatchedAas(subscriptions) {
 
 async function startWatching() {
   await cleanMyWatchedAddresses();
-  
-  const importBridgesAddresses = await getImportToObyteBridgesAddresses();
-  conf.subscriptions = [...conf.subscriptions, ...importBridgesAddresses];
+
+  conf.importBridgesAddresses = await getImportToObyteBridgesAddresses();
+  conf.subscriptions = [...conf.exchanges, ...conf.importBridgesAddresses];
   addWatchedAas(conf.subscriptions);
 
   eventBus.on('connected', () => {

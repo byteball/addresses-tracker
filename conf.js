@@ -6,8 +6,10 @@ exports.hub = process.env.testnet ? 'obyte.org/bb-test' : 'obyte.org/bb';
 exports.cs_url = process.env.testnet ? 'https://testnet-bridge.counterstake.org/api' : 'https://counterstake.org/api';
 
 exports.bNoPassphrase = true;
-exports.refreshHistoryOnlyAboveMci = 8043579;
+exports.refreshHistoryOnlyAboveMci = 9087700;
 
-exports.subscriptions = [
+exports.exchanges = [ 
   'QR542JXX7VJ5UJOZDKHTJCXAYWOATID2'
-]
+];
+
+exports.subscriptions = [];
