@@ -19,6 +19,7 @@ const newMyTransactions = async (arrNewUnits) => {
     for (let j = 0; j < authors.length; j++) {
       // 0.1) если биржа
       if (conf.exchanges.includes(authors[j])) {
+        console.log('///****________EXCHANGE UNIT', arrNewUnits[i]);
         const outputsRows = await db.query('SELECT address FROM outputs WHERE unit = ?', [arrNewUnits[i]]);
 
         const outputs = outputsRows.map(row => row.address);
@@ -35,6 +36,7 @@ const newMyTransactions = async (arrNewUnits) => {
 
       // 0.2) если мост
       if (conf.importBridgesAddresses.includes(authors[j])) {
+        console.log('________________CS UNIT', arrNewUnits[i]);
         const outputsRows = await db.query('SELECT address FROM outputs WHERE unit = ?', [arrNewUnits[i]]);
 
         const outputs = outputsRows.map(row => row.address);
