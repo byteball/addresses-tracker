@@ -1,47 +1,82 @@
 const db = require("ocore/db");
-const conf = require('../conf.js');
+const network = require("ocore/network");
+
 const { checkIsAddressAA } = require("../helpers/checkIsAddressAA");
 
-const getUnitsAuthoredBySubscribedAddresses = async (arrNewUnits) => {
-  const rows = await db.query('SELECT unit FROM unit_authors WHERE unit IN (?) AND address IN (?) GROUP BY unit', [arrNewUnits, conf.subscriptions]);
+const getUnitAuthors = async (unit) => {
+  return db.query('SELECT address FROM unit_authors WHERE unit = ?', [unit]);
+}
 
-  if (!rows.length) {
-    return null;
+const saveToTrackedAddresses = async (address) => {
+  const trackedAddressRow = await db.query('SELECT address FROM tracked_addresses WHERE address = ?', [address]);
+
+  if (trackedAddressRow.length) {
+    return;
   }
-  
-  return rows.map(row => row.unit);
+
+  console.log(`Address - ${address} was tracked at ${(new Date()).toISOString()}`);
+  await db.query('INSERT INTO tracked_addresses(address, creation_date) VALUES (?, ?)', [address, Date.now()]);
 }
 
-const getDistinctOutputAddresses = async (units) => {
-  const rows = await db.query('SELECT DISTINCT address FROM outputs WHERE unit IN (?) GROUP BY unit, address', [units]);
+const handleAddressesAuthoredByExchanges = async (unit, authors) => {
+  const outputsRows = await db.query('SELECT address FROM outputs WHERE unit = ?', [unit]);
 
-  return rows.map(row => row.address);
-}
-
-const insertSuitableAddressesToTracked = async (addresses) => {
-  for (let i = 0; i < addresses.length; i++) {
-    const address = addresses[i];
-
-    if(conf.subscriptions.includes(address)) {
+  for (let i = 0; i < outputsRows.length; i++) {
+    if (authors.includes(outputsRows[i].address) || await checkIsAddressAA(outputsRows[i].address)) {
       continue;
     }
 
-    const isAddressAA = await checkIsAddressAA(address);
-
-    if(isAddressAA) {
-      continue;
-    }
-
-    const trackedAddressRow = await db.query('SELECT address FROM tracked_addresses WHERE address = ?', [address]);
-
-    if(trackedAddressRow.length) {
-      continue;
-    }
-
-    await db.query('INSERT INTO tracked_addresses(address, creation_date) VALUES (?, ?)', [address, Date.now()]);
+    await saveToTrackedAddresses(outputsRows[i].address);
   }
 }
 
-exports.getUnitsAuthoredBySubscribedAddresses = getUnitsAuthoredBySubscribedAddresses;
-exports.getDistinctOutputAddresses = getDistinctOutputAddresses;
-exports.insertSuitableAddressesToTracked = insertSuitableAddressesToTracked;
+const checkAddressesAndSaveSuitable = async (addressesRows) => {
+  for (let i = 0; i < addressesRows.length; i++) {
+    if (await checkIsAddressAA(addressesRows[i].address)) {
+      continue;
+    }
+
+    await saveToTrackedAddresses(addressesRows[i].address);
+  }
+}
+
+const getAndHandleAaResponseChain = async (unit) => {
+  const definition = await network.requestFromLightVendor('light/get_aa_response_chain', {
+    trigger_unit: unit
+  });
+
+  for (let i = 0; i < definition.length; i++) {
+    if (definition[i].objResponseUnit) {
+      const messages = definition[i].objResponseUnit.messages || [];
+      for (let j = 0; j < messages.length; j++) {
+        if (messages[j].app === 'payment') {
+          const outputs = messages[j].payload.outputs;
+          await checkAddressesAndSaveSuitable(outputs);
+        }
+      }
+
+      const authors = definition[i].objResponseUnit.authors || [];
+      await checkAddressesAndSaveSuitable(authors);
+    }
+  }
+}
+
+const handleAddressesAuthoredByBridges = async (unit, authors) => {
+  const outputsRows = await db.query('SELECT address FROM outputs WHERE unit = ?', [unit]);
+
+  for (let i = 0; i < outputsRows.length; i++) {
+    if (authors.includes(outputsRows[i].address)) {
+      continue;
+    }
+
+    if (await checkIsAddressAA(outputsRows[i].address)) {
+      await getAndHandleAaResponseChain(unit);
+    }
+
+    await saveToTrackedAddresses(outputsRows[i].address);
+  }
+}
+
+exports.getUnitAuthors = getUnitAuthors;
+exports.handleAddressesAuthoredByExchanges = handleAddressesAuthoredByExchanges;
+exports.handleAddressesAuthoredByBridges = handleAddressesAuthoredByBridges;

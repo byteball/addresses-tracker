@@ -10,8 +10,7 @@ const checkIsAddressAA = async (address) => {
 
   try {
     const definition = await network.requestFromLightVendor('light/get_definition', address);
-
-    if(definition[0] === 'autonomous agent') {
+    if(definition && definition[0] === 'autonomous agent') {
       await db.query('INSERT INTO tracked_aas(address) VALUES (?)', [address]);
 
       return true;
@@ -19,7 +18,7 @@ const checkIsAddressAA = async (address) => {
 
     return false;
   } catch (e) {
-    return true;
+    return false;
   }
 }
 
