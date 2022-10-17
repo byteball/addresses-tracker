@@ -7,7 +7,7 @@ const getUnitAuthors = async (unit) => {
   return db.query('SELECT address FROM unit_authors WHERE unit = ?', [unit]);
 }
 
-const saveToTrackedAddresses = async (address) => {
+const saveIfNotExistsToTrackedAddresses = async (address) => {
   const trackedAddressRow = await db.query('SELECT address FROM tracked_addresses WHERE address = ?', [address]);
 
   if (trackedAddressRow.length) {
@@ -26,17 +26,17 @@ const handleAddressesAuthoredByExchanges = async (unit, authors) => {
       continue;
     }
 
-    await saveToTrackedAddresses(outputsRows[i].address);
+    await saveIfNotExistsToTrackedAddresses(outputsRows[i].address);
   }
 }
 
-const checkAddressesAndSaveSuitable = async (addressesRows) => {
+const checkAddressesAndSaveNotAaAddresses = async (addressesRows) => {
   for (let i = 0; i < addressesRows.length; i++) {
     if (await checkIsAddressAA(addressesRows[i].address)) {
       continue;
     }
 
-    await saveToTrackedAddresses(addressesRows[i].address);
+    await saveIfNotExistsToTrackedAddresses(addressesRows[i].address);
   }
 }
 
@@ -51,12 +51,12 @@ const getAndHandleAaResponseChain = async (unit) => {
       for (let j = 0; j < messages.length; j++) {
         if (messages[j].app === 'payment') {
           const outputs = messages[j].payload.outputs;
-          await checkAddressesAndSaveSuitable(outputs);
+          await checkAddressesAndSaveNotAaAddresses(outputs);
         }
       }
 
       const authors = definition[i].objResponseUnit.authors || [];
-      await checkAddressesAndSaveSuitable(authors);
+      await checkAddressesAndSaveNotAaAddresses(authors);
     }
   }
 }
@@ -71,9 +71,10 @@ const handleAddressesAuthoredByBridges = async (unit, authors) => {
 
     if (await checkIsAddressAA(outputsRows[i].address)) {
       await getAndHandleAaResponseChain(unit);
+      continue;
     }
 
-    await saveToTrackedAddresses(outputsRows[i].address);
+    await saveIfNotExistsToTrackedAddresses(outputsRows[i].address);
   }
 }
 

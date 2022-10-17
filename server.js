@@ -1,4 +1,6 @@
 const fastify = require('fastify')();
+
+const conf = require("./conf.js");
 const { getTrackedAddresses } = require('./services/trackedAddressesService.js');
 
 fastify.get('/tracked_addresses', async (request, reply) => {
@@ -12,7 +14,7 @@ fastify.get('/tracked_addresses', async (request, reply) => {
 
 const launch = async () => {
   try {
-    await fastify.listen({ port: 3000 })
+    await fastify.listen({ port: conf.webPort })
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)

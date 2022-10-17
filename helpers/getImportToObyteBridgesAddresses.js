@@ -4,7 +4,7 @@ const sleep = require("../utils/sleep");
 
 async function getBridges(r = 0) {
   try {
-    const bridges = await axios.get(`${conf.cs_url}/bridges`);
+    const bridges = await axios.get(`${conf.csUrl}/bridges`);
 
     return bridges.data.data;
   } catch (e) {
