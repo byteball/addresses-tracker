@@ -5,8 +5,7 @@ const wallet_general = require('ocore/wallet_general.js');
 
 const conf = require('./conf.js');
 
-const { getImportToObyteBridgesAddresses } = require('./helpers/getImportToObyteBridgesAddresses.js');
-const { cleanMyWatchedAddresses } = require('./helpers/cleanMyWatchedAddresses.js');
+const { getImportToObyteBridgeAddresses } = require('./helpers/getImportToObyteBridgeAddresses.js');
 const { newMyTransactions } = require('./gateways/newMyTransactions.js');
 const { launchServer } = require('./server.js');
 
@@ -21,10 +20,8 @@ async function addWatchedAas(subscriptions) {
 }
 
 async function startWatching() {
-  await cleanMyWatchedAddresses();
-
-  conf.importBridgesAddresses = await getImportToObyteBridgesAddresses();
-  conf.subscriptions = [...conf.exchanges, ...conf.importBridgesAddresses];
+  conf.importBridgeAddresses = await getImportToObyteBridgeAddresses();
+  conf.subscriptions = [...conf.exchanges, ...conf.importBridgeAddresses];
   addWatchedAas(conf.subscriptions);
 
   eventBus.on('connected', () => {

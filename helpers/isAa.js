@@ -1,7 +1,7 @@
 const db = require("ocore/db");
 const network = require("ocore/network");
 
-const checkIsAddressAA = async (address) => {
+const isAa = async (address) => {
   const rows = await db.query('SELECT * FROM tracked_aas WHERE address = ?', [address]);
 
   if(rows.length) {
@@ -22,4 +22,4 @@ const checkIsAddressAA = async (address) => {
   }
 }
 
-exports.checkIsAddressAA = checkIsAddressAA;
+exports.isAa = isAa;

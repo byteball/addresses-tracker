@@ -7,15 +7,17 @@ const {
 
 const newMyTransactions = async (arrNewUnits) => {
   for (let i = 0; i < arrNewUnits.length; i++) {
-    const unitAuthorsRows = await getUnitAuthors(arrNewUnits[i]);
-
-    for (let j = 0; j < unitAuthorsRows.length; j++) {
-      if (conf.exchanges.includes(unitAuthorsRows[j].address)) {
-        await handleAddressesAuthoredByExchanges(arrNewUnits[i], unitAuthorsRows[j].address);
+    const unitAuthors = await getUnitAuthors(arrNewUnits[i]);
+    
+    for (let j = 0; j < unitAuthors.length; j++) {
+      if (conf.exchanges.includes(unitAuthors[j])) {
+        const exchangeAddress = unitAuthors[j];
+        
+        await handleAddressesAuthoredByExchanges(arrNewUnits[i], exchangeAddress);
       }
 
-      if (conf.importBridgesAddresses.includes(unitAuthorsRows[j].address)) {
-        await handleAddressesAuthoredByBridges(arrNewUnits[i], unitAuthorsRows[j].address);
+      if (conf.importBridgeAddresses.includes(unitAuthors[j])) {
+        await handleAddressesAuthoredByBridges(arrNewUnits[i], unitAuthors);
       }
     }
   }

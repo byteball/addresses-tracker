@@ -1,5 +1,5 @@
 {
-  "name": "wallets-tracker6",
+  "name": "wallets-tracker",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,6 +9,7 @@
   "dependencies": {
     "axios": "^0.27.2",
     "fastify": "^4.5.3",
+    "luxon": "^3.0.4",
     "ocore": "git+https://github.com/byteball/ocore.git"
   },
   "author": "",

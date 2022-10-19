@@ -1,10 +1,12 @@
 const db = require("ocore/db");
 const network = require("ocore/network");
 
-const { checkIsAddressAA } = require("../helpers/checkIsAddressAA");
+const { isAa } = require("../helpers/isAa");
 
 const getUnitAuthors = async (unit) => {
-  return db.query('SELECT address FROM unit_authors WHERE unit = ?', [unit]);
+  const rows = await db.query('SELECT address FROM unit_authors WHERE unit = ?', [unit]);
+  
+  return rows.map(row => row.address);
 }
 
 const saveIfNotExistsToTrackedAddresses = async (address) => {
@@ -18,21 +20,23 @@ const saveIfNotExistsToTrackedAddresses = async (address) => {
   await db.query('INSERT INTO tracked_addresses(address, creation_date) VALUES (?, ?)', [address, Date.now()]);
 }
 
-const handleAddressesAuthoredByExchanges = async (unit, authors) => {
+const handleAddressesAuthoredByExchanges = async (unit, exchangeAddress) => {
   const outputsRows = await db.query('SELECT address FROM outputs WHERE unit = ?', [unit]);
+  
+  if(outputsRows.find(row => row.address === exchangeAddress)) { //кроме exchangeAddress !!!
+    for (let i = 0; i < outputsRows.length; i++) {
+      if (await isAa(outputsRows[i].address)) {
+        continue;
+      }
 
-  for (let i = 0; i < outputsRows.length; i++) {
-    if (authors.includes(outputsRows[i].address) || await checkIsAddressAA(outputsRows[i].address)) {
-      continue;
+      await saveIfNotExistsToTrackedAddresses(outputsRows[i].address);
     }
-
-    await saveIfNotExistsToTrackedAddresses(outputsRows[i].address);
-  }
+  }   
 }
 
 const checkAddressesAndSaveNotAaAddresses = async (addressesRows) => {
   for (let i = 0; i < addressesRows.length; i++) {
-    if (await checkIsAddressAA(addressesRows[i].address)) {
+    if (await isAa(addressesRows[i].address)) {      
       continue;
     }
 
@@ -41,22 +45,19 @@ const checkAddressesAndSaveNotAaAddresses = async (addressesRows) => {
 }
 
 const getAndHandleAaResponseChain = async (unit) => {
-  const definition = await network.requestFromLightVendor('light/get_aa_response_chain', {
+  const responseChain = await network.requestFromLightVendor('light/get_aa_response_chain', {
     trigger_unit: unit
   });
 
-  for (let i = 0; i < definition.length; i++) {
-    if (definition[i].objResponseUnit) {
-      const messages = definition[i].objResponseUnit.messages || [];
+  for (let i = 0; i < responseChain.length; i++) {
+    if (responseChain[i].objResponseUnit) {
+      const messages = responseChain[i].objResponseUnit.messages || [];
       for (let j = 0; j < messages.length; j++) {
         if (messages[j].app === 'payment') {
           const outputs = messages[j].payload.outputs;
           await checkAddressesAndSaveNotAaAddresses(outputs);
         }
       }
-
-      const authors = definition[i].objResponseUnit.authors || [];
-      await checkAddressesAndSaveNotAaAddresses(authors);
     }
   }
 }
@@ -69,7 +70,7 @@ const handleAddressesAuthoredByBridges = async (unit, authors) => {
       continue;
     }
 
-    if (await checkIsAddressAA(outputsRows[i].address)) {
+    if (await isAa(outputsRows[i].address)) {
       await getAndHandleAaResponseChain(unit);
       continue;
     }

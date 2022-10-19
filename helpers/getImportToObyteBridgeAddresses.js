@@ -19,17 +19,17 @@ async function getBridges(r = 0) {
   }
 }
 
-async function getImportToObyteBridgesAddresses() {
+async function getImportToObyteBridgeAddresses() {
   const bridges = await getBridges();
 
-  const importToObyteBridgesAddresses = [];
+  const importToObyteBridgeAddresses = [];
   for (let i = 0; i < bridges.length; i++) {
     if(bridges[i].foreign_network === 'Obyte') {
-      importToObyteBridgesAddresses.push(bridges[i].import_aa);
+      importToObyteBridgeAddresses.push(bridges[i].import_aa);
     }
   }
 
-  return importToObyteBridgesAddresses;
+  return importToObyteBridgeAddresses;
 }
 
-exports.getImportToObyteBridgesAddresses = getImportToObyteBridgesAddresses;
+exports.getImportToObyteBridgeAddresses = getImportToObyteBridgeAddresses;
