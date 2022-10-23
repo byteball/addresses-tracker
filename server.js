@@ -4,12 +4,18 @@ const conf = require("./conf.js");
 const { getTrackedAddresses } = require('./services/trackedAddressesService.js');
 
 fastify.get('/tracked_addresses', async (request, reply) => {
-  const fromTimestamp = request.query.from_timestamp || null;
-  const toTimestamp = request.query.to_timestamp || null;
-  
-  const trackedAddresses = await getTrackedAddresses(fromTimestamp, toTimestamp);
+  if(!request.query.from_date || !request.query.to_date) {
+    reply.code(400).send({ error: 'from_date and to_date is required request query params!' });
+    return;
+  }
 
-  reply.code(200).send(trackedAddresses);
+  try {
+    const trackedAddresses = await getTrackedAddresses(request.query.from_date, request.query.to_date);
+
+    reply.code(200).send(trackedAddresses);
+  } catch (error) {
+    reply.code(400).send({ error });
+  } 
 })
 
 const launch = async () => {

@@ -17,15 +17,15 @@ const saveIfNotExistsToTrackedAddresses = async (address) => {
   }
 
   console.log(`Address - ${address} was tracked at ${(new Date()).toISOString()}`);
-  await db.query('INSERT INTO tracked_addresses(address, creation_date) VALUES (?, ?)', [address, Date.now()]);
+  await db.query('INSERT INTO tracked_addresses(address, creation_date) VALUES (?, DATETIME("now"))', [address]);
 }
 
 const handleAddressesAuthoredByExchanges = async (unit, exchangeAddress) => {
   const outputsRows = await db.query('SELECT address FROM outputs WHERE unit = ?', [unit]);
   
-  if(outputsRows.find(row => row.address === exchangeAddress)) { //кроме exchangeAddress !!!
+  if(outputsRows.find(row => row.address === exchangeAddress)) {
     for (let i = 0; i < outputsRows.length; i++) {
-      if (await isAa(outputsRows[i].address)) {
+      if (await isAa(outputsRows[i].address) || outputsRows[i].address === exchangeAddress) {
         continue;
       }
 

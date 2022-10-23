@@ -11,5 +11,3 @@ exports.refreshHistoryOnlyAboveMci = 9087700;
 exports.exchanges = [ 
   'QR542JXX7VJ5UJOZDKHTJCXAYWOATID2'
 ];
-
-exports.subscriptions = [];

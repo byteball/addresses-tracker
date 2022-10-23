@@ -1,14 +1,16 @@
 const db = require("ocore/db");
-const { DateTime } = require("luxon");
+const { validateDate } = require("../helpers/validateDate");
 
-const getTrackedAddresses = async (fromTimestamp, toTimestamp) => {
-  if (!fromTimestamp || !toTimestamp) {
-    const timestamp = Date.now();
-    toTimestamp = timestamp;
-    fromTimestamp = timestamp - (24 * 60 * 60 * 1000);
-  }  
+const getTrackedAddresses = async (fromDate, toDate) => {
+  if(!validateDate(fromDate)) {
+    throw 'Invalid from_date datetime format!';
+  }
   
-  return db.query('SELECT address, creation_date FROM tracked_addresses WHERE creation_date >= ? AND creation_date <= ?', [fromTimestamp, toTimestamp]);
+  if(!validateDate(toDate)) {
+    throw 'Invalid to_date datetime format!';
+  }
+
+  return db.query('SELECT address, creation_date FROM tracked_addresses WHERE creation_date >= ? AND creation_date <= ?', [fromDate, toDate]);
 };
 
 exports.getTrackedAddresses = getTrackedAddresses;

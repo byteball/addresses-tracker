@@ -5,7 +5,7 @@ const {
   getUnitAuthors
 } = require('../services/newMyTransactionsService');
 
-const newMyTransactions = async (arrNewUnits) => {
+const newMyTransactions = async (arrNewUnits, importBridgeAddresses) => {
   for (let i = 0; i < arrNewUnits.length; i++) {
     const unitAuthors = await getUnitAuthors(arrNewUnits[i]);
     
@@ -16,7 +16,7 @@ const newMyTransactions = async (arrNewUnits) => {
         await handleAddressesAuthoredByExchanges(arrNewUnits[i], exchangeAddress);
       }
 
-      if (conf.importBridgeAddresses.includes(unitAuthors[j])) {
+      if (importBridgeAddresses.includes(unitAuthors[j])) {
         await handleAddressesAuthoredByBridges(arrNewUnits[i], unitAuthors);
       }
     }
