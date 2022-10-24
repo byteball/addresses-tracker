@@ -1,5 +1,6 @@
 const db = require("ocore/db");
 const network = require("ocore/network");
+const myWitnesses = require("ocore/my_witnesses");
 
 const { isAa } = require("../helpers/isAa");
 
@@ -9,7 +10,31 @@ const getUnitAuthors = async (unit) => {
   return rows.map(row => row.address);
 }
 
-const saveIfNotExistsToTrackedAddresses = async (address) => {
+const isFirstTransaction = (address, unit) => {
+  return new Promise(async (resolve) => {
+        myWitnesses.readMyWitnesses(async (witnesses) => {
+          const history = await network.requestFromLightVendor('light/get_history', {
+            addresses: [address],
+            witnesses
+          });
+
+          if (history.joints && history.joints[0].unit.unit === unit) {
+            resolve(true);
+            return;
+          }
+
+          resolve(false);
+        }, 'wait')
+    }
+  )
+}
+
+
+const saveToTrackedAddresses = async (address, unit) => {
+  if(!(await isFirstTransaction(address, unit))) {
+    return
+  }
+  
   const trackedAddressRow = await db.query('SELECT address FROM tracked_addresses WHERE address = ?', [address]);
 
   if (trackedAddressRow.length) {
@@ -29,18 +54,18 @@ const handleAddressesAuthoredByExchanges = async (unit, exchangeAddress) => {
         continue;
       }
 
-      await saveIfNotExistsToTrackedAddresses(outputsRows[i].address);
+      await saveToTrackedAddresses(outputsRows[i].address, unit);
     }
   }   
 }
 
-const checkAddressesAndSaveNotAaAddresses = async (addressesRows) => {
+const checkAddressesAndSaveNotAaAddresses = async (addressesRows, unit) => {
   for (let i = 0; i < addressesRows.length; i++) {
     if (await isAa(addressesRows[i].address)) {      
       continue;
     }
 
-    await saveIfNotExistsToTrackedAddresses(addressesRows[i].address);
+    await saveToTrackedAddresses(addressesRows[i].address, unit);
   }
 }
 
@@ -55,7 +80,7 @@ const getAndHandleAaResponseChain = async (unit) => {
       for (let j = 0; j < messages.length; j++) {
         if (messages[j].app === 'payment') {
           const outputs = messages[j].payload.outputs;
-          await checkAddressesAndSaveNotAaAddresses(outputs);
+          await checkAddressesAndSaveNotAaAddresses(outputs, unit);
         }
       }
     }
@@ -75,7 +100,7 @@ const handleAddressesAuthoredByBridges = async (unit, authors) => {
       continue;
     }
 
-    await saveIfNotExistsToTrackedAddresses(outputsRows[i].address);
+    await saveToTrackedAddresses(outputsRows[i].address, unit);
   }
 }
 
