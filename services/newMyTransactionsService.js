@@ -1,34 +1,14 @@
 const db = require("ocore/db");
 const network = require("ocore/network");
-const myWitnesses = require("ocore/my_witnesses");
 
 const { isAa } = require("../helpers/isAa");
+const { isFirstTransaction } = require("../helpers/isFirstTransaction");
 
 const getUnitAuthors = async (unit) => {
   const rows = await db.query('SELECT address FROM unit_authors WHERE unit = ?', [unit]);
   
   return rows.map(row => row.address);
 }
-
-const isFirstTransaction = (address, unit) => {
-  return new Promise(async (resolve) => {
-        myWitnesses.readMyWitnesses(async (witnesses) => {
-          const history = await network.requestFromLightVendor('light/get_history', {
-            addresses: [address],
-            witnesses
-          });
-
-          if (history.joints && history.joints[0].unit.unit === unit) {
-            resolve(true);
-            return;
-          }
-
-          resolve(false);
-        }, 'wait')
-    }
-  )
-}
-
 
 const saveToTrackedAddresses = async (address, unit) => {
   if(!(await isFirstTransaction(address, unit))) {
