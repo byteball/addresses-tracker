@@ -12,7 +12,7 @@ const getUnitAuthors = async (unit) => {
 
 const saveToTrackedAddresses = async (address, unit) => {
   if(!(await isFirstTransaction(address, unit))) {
-    return
+    return;
   }
   
   const trackedAddressRow = await db.query('SELECT address FROM tracked_addresses WHERE address = ?', [address]);
@@ -25,7 +25,7 @@ const saveToTrackedAddresses = async (address, unit) => {
   await db.query('INSERT INTO tracked_addresses(address, creation_date) VALUES (?, DATETIME("now"))', [address]);
 }
 
-const handleAddressesAuthoredByExchanges = async (outputsRows, exchangeAddress) => {
+const handleAddressesAuthoredByExchanges = async (outputsRows, exchangeAddress, unit) => {
   for (let i = 0; i < outputsRows.length; i++) {
     if (await isAa(outputsRows[i].address) || outputsRows[i].address === exchangeAddress) {
       continue;

@@ -20,7 +20,7 @@ const newMyTransactions = async (arrNewUnits, importBridgeAddresses) => {
     const outputsRows = await db.query('SELECT address FROM outputs WHERE unit = ?', [arrNewUnits[i]]);
     for (let k = 0; k < outputsRows.length; k++) {
       if (conf.exchanges.includes(outputsRows[k].address)) {
-        await handleAddressesAuthoredByExchanges(outputsRows, outputsRows[k].address);
+        await handleAddressesAuthoredByExchanges(outputsRows, outputsRows[k].address, arrNewUnits[i]);
         break;
       }
     }
