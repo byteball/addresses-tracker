@@ -5,6 +5,7 @@ const wallet_general = require('ocore/wallet_general.js');
 
 const conf = require('./conf.js');
 
+const { runMigration } = require('./migration.js')
 const { getImportToObyteBridgeAddresses } = require('./helpers/getImportToObyteBridgeAddresses.js');
 const { newMyTransactions } = require('./gateways/newMyTransactions.js');
 const { launchServer } = require('./server.js');
@@ -22,6 +23,8 @@ async function addWatchedAas(subscriptions) {
 let importBridgeAddresses;
 
 async function startWatching() {
+  await runMigration();
+  
   importBridgeAddresses = await getImportToObyteBridgeAddresses();
   
   const subscriptions = [...conf.exchanges, ...importBridgeAddresses];

@@ -2,23 +2,26 @@ const db = require("ocore/db");
 const network = require("ocore/network");
 
 const isAa = async (address) => {
-  const rows = await db.query('SELECT * FROM tracked_aas WHERE address = ?', [address]);
+  const trackedAasRows = await db.query('SELECT is_aa FROM is_address_aa WHERE address = ?', [address]);
 
-  if(rows.length) {
-    return true
+  if(trackedAasRows.length) {
+    return trackedAasRows[0].is_aa;
   }
 
   try {
     const definition = await network.requestFromLightVendor('light/get_definition', address);
-    if(definition && definition[0] === 'autonomous agent') {
-      await db.query('INSERT INTO tracked_aas(address) VALUES (?)', [address]);
 
-      return true;
+    let isAa = 0;
+
+    if(definition && definition[0] === 'autonomous agent') {
+      isAa = 1;
     }
 
-    return false;
+    await db.query('INSERT INTO is_address_aa(address, is_aa) VALUES (?, ?)', [address, isAa]);
+
+    return isAa;
   } catch (e) {
-    return false;
+    return 0;
   }
 }
 

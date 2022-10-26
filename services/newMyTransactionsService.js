@@ -14,15 +14,17 @@ const saveToTrackedAddresses = async (address, unit) => {
   if(!(await isFirstTransaction(address, unit))) {
     return;
   }
-  
+
   const trackedAddressRow = await db.query('SELECT address FROM tracked_addresses WHERE address = ?', [address]);
 
   if (trackedAddressRow.length) {
     return;
   }
 
+  const unitCreationDateRows = await db.query('SELECT creation_date FROM units WHERE unit = ?', [unit]);
+
   console.log(`Address - ${address} was tracked at ${(new Date()).toISOString()}`);
-  await db.query('INSERT INTO tracked_addresses(address, creation_date) VALUES (?, DATETIME("now"))', [address]);
+  await db.query('INSERT INTO tracked_addresses(address, creation_date) VALUES (?, ?)', [address, unitCreationDateRows[0].creation_date]);
 }
 
 const handleAddressesAuthoredByExchanges = async (outputsRows, exchangeAddress, unit) => {

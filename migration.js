@@ -1,16 +1,17 @@
 const db = require('ocore/db');
 
-async function start(){  
+const runMigration = async () => {
   await db.query(`CREATE TABLE IF NOT EXISTS tracked_addresses (
 		address CHAR(32) NOT NULL,
 		creation_date TEXT NOT NULL,
 		PRIMARY KEY (address))`)
 
-  await db.query(`CREATE TABLE IF NOT EXISTS tracked_aas (
+  await db.query(`CREATE TABLE IF NOT EXISTS is_address_aa (
 		address CHAR(32) NOT NULL,
+		is_aa TINYINT NOT NULL,
 		PRIMARY KEY (address))`)
 
-  console.log('done')
+  console.log('migrations successfully executed')
 }
 
-start();
+exports.runMigration = runMigration;
