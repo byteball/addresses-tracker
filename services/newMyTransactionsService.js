@@ -25,18 +25,14 @@ const saveToTrackedAddresses = async (address, unit) => {
   await db.query('INSERT INTO tracked_addresses(address, creation_date) VALUES (?, DATETIME("now"))', [address]);
 }
 
-const handleAddressesAuthoredByExchanges = async (unit, exchangeAddress) => {
-  const outputsRows = await db.query('SELECT address FROM outputs WHERE unit = ?', [unit]);
-  
-  if(outputsRows.find(row => row.address === exchangeAddress)) {
-    for (let i = 0; i < outputsRows.length; i++) {
-      if (await isAa(outputsRows[i].address) || outputsRows[i].address === exchangeAddress) {
-        continue;
-      }
-
-      await saveToTrackedAddresses(outputsRows[i].address, unit);
+const handleAddressesAuthoredByExchanges = async (outputsRows, exchangeAddress) => {
+  for (let i = 0; i < outputsRows.length; i++) {
+    if (await isAa(outputsRows[i].address) || outputsRows[i].address === exchangeAddress) {
+      continue;
     }
-  }   
+
+    await saveToTrackedAddresses(outputsRows[i].address, unit);
+  }
 }
 
 const checkAddressesAndSaveNotAaAddresses = async (addressesRows, unit) => {
