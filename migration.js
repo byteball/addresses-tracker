@@ -5,6 +5,8 @@ const runMigration = async () => {
 		address CHAR(32) NOT NULL,
 		creation_date TEXT NOT NULL,
 		PRIMARY KEY (address))`)
+  
+  await db.query(`CREATE INDEX IF NOT EXISTS trackedAddressesByCreationDate ON tracked_addresses (creation_date DESC)`);
 
   await db.query(`CREATE TABLE IF NOT EXISTS is_address_aa (
 		address CHAR(32) NOT NULL,
