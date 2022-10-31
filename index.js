@@ -16,7 +16,7 @@ eventBus.once('connected', (ws) => {
   network.initWitnessesIfNecessary(ws, startWatching);
 });
 
-async function addWatchedAas(subscriptions) {
+async function addWatchedAddresses(subscriptions) {
   subscriptions.map((address) => wallet_general.addWatchedAddress(address, null, console.log));
 }
 
@@ -28,10 +28,10 @@ async function startWatching() {
   importBridgeAddresses = await getImportToObyteBridgeAddresses();
   
   const subscriptions = [...conf.exchanges, ...importBridgeAddresses];
-  addWatchedAas(subscriptions);
+  addWatchedAddresses(subscriptions);
 
   eventBus.on('connected', () => {
-    addWatchedAas(subscriptions);
+    addWatchedAddresses(subscriptions);
     lightWallet.refreshLightClientHistory();
   });
 

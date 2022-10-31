@@ -2,7 +2,7 @@ const db = require("ocore/db");
 const network = require("ocore/network");
 
 const isAa = async (address) => {
-  const trackedAasRows = await db.query('SELECT is_aa FROM is_address_aa WHERE address = ?', [address]);
+  const trackedAasRows = await db.query('SELECT is_aa FROM address_types WHERE address = ?', [address]);
 
   if(trackedAasRows.length) {
     return trackedAasRows[0].is_aa;
@@ -17,7 +17,7 @@ const isAa = async (address) => {
       isAa = 1;
     }
 
-    await db.query('INSERT INTO is_address_aa(address, is_aa) VALUES (?, ?)', [address, isAa]);
+    await db.query('INSERT INTO address_types(address, is_aa) VALUES (?, ?)', [address, isAa]);
 
     return isAa;
   } catch (e) {

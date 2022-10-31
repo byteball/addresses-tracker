@@ -11,13 +11,13 @@ const getUnitAuthors = async (unit) => {
 }
 
 const saveToTrackedAddresses = async (address, unit) => {
-  if(!(await isFirstTransaction(address, unit))) {
-    return;
-  }
-
   const trackedAddressRow = await db.query('SELECT address FROM tracked_addresses WHERE address = ?', [address]);
 
   if (trackedAddressRow.length) {
+    return;
+  }
+  
+  if(!(await isFirstTransaction(address, unit))) {
     return;
   }
 
@@ -28,22 +28,22 @@ const saveToTrackedAddresses = async (address, unit) => {
 }
 
 const handleAddressesAuthoredByExchanges = async (outputsRows, exchangeAddress, unit) => {
-  for (let i = 0; i < outputsRows.length; i++) {
-    if (await isAa(outputsRows[i].address) || outputsRows[i].address === exchangeAddress) {
+  for (const { address } of outputsRows) {
+    if (await isAa(address) || address === exchangeAddress) {
       continue;
     }
 
-    await saveToTrackedAddresses(outputsRows[i].address, unit);
+    await saveToTrackedAddresses(address, unit);
   }
 }
 
 const checkAddressesAndSaveNotAaAddresses = async (addressesRows, unit) => {
-  for (let i = 0; i < addressesRows.length; i++) {
-    if (await isAa(addressesRows[i].address)) {      
+  for (const { address } of addressesRows) {
+    if (await isAa(address)) {      
       continue;
     }
 
-    await saveToTrackedAddresses(addressesRows[i].address, unit);
+    await saveToTrackedAddresses(address, unit);
   }
 }
 
@@ -68,17 +68,17 @@ const getAndHandleAaResponseChain = async (unit) => {
 const handleAddressesAuthoredByBridges = async (unit, authors) => {
   const outputsRows = await db.query('SELECT address FROM outputs WHERE unit = ?', [unit]);
 
-  for (let i = 0; i < outputsRows.length; i++) {
-    if (authors.includes(outputsRows[i].address)) {
+  for (const { address } of outputsRows) {
+    if (authors.includes(address)) {
       continue;
     }
 
-    if (await isAa(outputsRows[i].address)) {
+    if (await isAa(address)) {
       await getAndHandleAaResponseChain(unit);
       continue;
     }
 
-    await saveToTrackedAddresses(outputsRows[i].address, unit);
+    await saveToTrackedAddresses(address, unit);
   }
 }
 
