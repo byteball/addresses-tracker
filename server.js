@@ -1,7 +1,7 @@
 const fastify = require('fastify')();
 
 const conf = require("./conf.js");
-const { getTrackedAddresses, getTrackedAddressesCountByDate } = require('./services/trackedAddressesService.js');
+const { getTrackedAddresses, getNewAddressesByDate } = require('./services/trackedAddressesService.js');
 
 fastify.get('/tracked_addresses', async (request, reply) => {
   if(!request.query.from_date) {
@@ -18,14 +18,14 @@ fastify.get('/tracked_addresses', async (request, reply) => {
   } 
 })
 
-fastify.get('/tracked_addresses_stats', async (request, reply) => {
+fastify.get('/new_addresses_by_day', async (request, reply) => {
   if(!request.query.from_date) {
-    reply.code(400).send({ error: 'from_date and to_date is required request query params!' });
+    reply.code(400).send({ error: 'from_date is required request query params!' });
     return;
   }
 
   try {
-    const stats = await getTrackedAddressesCountByDate(request.query.from_date, request.query.to_date);
+    const stats = await getNewAddressesByDate(request.query.from_date, request.query.to_date);
 
     reply.code(200).send(stats);
   } catch (error) {
