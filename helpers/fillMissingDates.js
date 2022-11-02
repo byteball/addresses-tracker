@@ -8,10 +8,10 @@ const fillMissingDates = (fromDate, toDate, newAddressesByDay) => {
   let dateBuffer = DateTime.fromFormat(fromDate, 'yyyy-MM-dd');
   do {
     const dayStat = {};
-    dayStat.tracking_date = dateBuffer.toFormat('yyyy-MM-dd');
+    dayStat.date = dateBuffer.toFormat('yyyy-MM-dd');
 
-    if (newAddressesByDay[dayStat.tracking_date] !== undefined) {
-      dayStat.addresses = newAddressesByDay[dayStat.tracking_date];
+    if (newAddressesByDay[dayStat.date] !== undefined) {
+      dayStat.addresses = newAddressesByDay[dayStat.date];
       result.push(dayStat);
       dateBuffer = dateBuffer.plus({ days: 1 });
       continue;

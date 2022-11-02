@@ -33,13 +33,13 @@ const getNewAddressesByDate = async (fromDate, toDate) => {
     toDate = DateTime.now().toFormat('yyyy-MM-dd');
   }
 
-  const rows = await db.query(`SELECT COUNT(*) as addresses, strftime('%Y-%m-%d', creation_date) as tracking_date
-     FROM tracked_addresses WHERE tracking_date >= ? AND tracking_date <= ? GROUP BY tracking_date ORDER BY tracking_date`, 
+  const rows = await db.query(`SELECT COUNT(*) as addresses, strftime('%Y-%m-%d', creation_date) as date
+     FROM tracked_addresses WHERE date >= ? AND date <= ? GROUP BY date ORDER BY date`, 
     [fromDate, toDate]);
 
   const newAddressesByDay = {};
   rows.forEach(row => {
-    newAddressesByDay[row.tracking_date] = row.addresses;
+    newAddressesByDay[row.date] = row.addresses;
   });
 
   return fillMissingDates(fromDate, toDate, newAddressesByDay);
