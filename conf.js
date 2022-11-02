@@ -1,6 +1,7 @@
 exports.bServeAsHub = false;
 exports.bLight = true;
 
+exports.webHost = '0.0.0.0';
 exports.webPort = 3000;
 exports.hub = process.env.testnet ? 'obyte.org/bb-test' : 'obyte.org/bb';
 exports.csUrl = process.env.testnet ? 'https://testnet-bridge.counterstake.org/api' : 'https://counterstake.org/api';

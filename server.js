@@ -35,9 +35,9 @@ fastify.get('/new_addresses_by_day', async (request, reply) => {
 
 const launch = async () => {
   try {
-    await fastify.listen({ port: conf.webPort })
+    await fastify.listen({ port: conf.webPort, host: conf.webHost })
   } catch (err) {
-    fastify.log.error(err)
+    console.error(err)
     process.exit(1)
   }
 }
